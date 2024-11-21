@@ -17,6 +17,8 @@ int main(int ac, char *av[])
     char buf[512]={'\0'};
     strcpy(target,Get_Branch(list,name));
 
+    int in_fd=0;
+
     int out_fd=0; //서버에서 클라이언트로 데이터를 전송할 것이므로 쓰기 전용 열기
     int n=0;
 

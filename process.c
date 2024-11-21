@@ -46,7 +46,7 @@ char * Get_Branch(process list[100], char target[512])
 }
 
 
-void Make_Pipe(process target)
+char * Make_Pipe(process target)
 {
     int pipefd[2]={0};
     char buffer[1024]={'\0'};
@@ -60,7 +60,6 @@ void Make_Pipe(process target)
         exit(1);
     }
 
-
-    
+    return pipe_name;
 
 }
