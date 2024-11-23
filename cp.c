@@ -6,7 +6,7 @@
 
 #define COPYMODE 0644
 
-void Copy(int ac, char *av[])
+void Copy(char *av1,char *av2)
 {
     int in_fd=1;
     int out_fd=1;
@@ -14,8 +14,8 @@ void Copy(int ac, char *av[])
     int w_char=0;
     char buf[1024]={'\0'};
 
-    in_fd=open(av[1], O_RDONLY);
-    out_fd=creat(av[2],COPYMODE);
+    in_fd=open(av1, O_RDONLY);
+    out_fd=creat(av2,COPYMODE);
 
     if (in_fd==-1 || out_fd==-1)
     {

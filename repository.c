@@ -86,11 +86,5 @@ int main(int ac, char *av[])
         shmdt(shmaddr);
     }
 
-
-
-
-
-
-
     return 0;
 }

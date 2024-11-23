@@ -1,5 +1,5 @@
 CC=gcc
-OBJS=checkout.o cp.o process.o
+OBJS=checkout.o cp.o
 TARGET=app.out
 
 all:$(TARGET)
@@ -13,8 +13,6 @@ checkout.o: cp.h checkout.c
 cp.o: cp.h cp.c 
 	$(CC) -c cp.c 
 
-process.o: process.h process.c
-	$(CC) -c process.c
 
 clean:
 	rm $(OBJS)
