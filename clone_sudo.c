@@ -1,6 +1,3 @@
-/*
-    상대경로일때 실행 x
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,8 +9,8 @@
 #define PATH_MAX 4096 //임시로
 
 // 함수 선언
-char* get_absolute_path(const char* input_path);          // 절대 경로로 변환 (변환 안됨..)
-void create_directory_if_not_exists(const char* dir_path); // 디렉터리 생성
+char* get_absolute_path(const char* input_path);          // 절대 경로로 변환
+void no_directory_message(const char* dir_path);          // 디렉터리 존재 확인 및 메시지 출력
 int copy_file(const char* source_path, const char* dest_path); // 파일 복사
 int check_file_exists(const char* file_path);             // 파일 존재 확인
 
@@ -30,17 +27,14 @@ int main(int argc, char* argv[]) {
     // Step 2: 저장 디렉터리 결정
     const char* default_dir = "~/clone_repos"; // 기본 저장 디렉터리(임시로)
     const char* save_dir;
-    if (argc > 2) 
-    {
+    if (argc > 2) {
         save_dir = argv[2];
-    }    
-    else 
-    {
+    } else {
         save_dir = default_dir;
     }
 
-    //디렉토리 만들기
-    create_directory_if_not_exists(save_dir);
+    // 디렉터리 존재 여부 메시지 출력
+    no_directory_message(save_dir);
 
     // Step 3: 파일 존재 여부 및 복사
     struct stat file_stat;
@@ -81,25 +75,21 @@ char* get_absolute_path(const char* input_path) {
     return abs_path;
 }
 
-// 디렉터리가 없으면 생성
-void create_directory_if_not_exists(const char* dir_path) {
+// 디렉터리가 없으면 메시지만 출력
+void no_directory_message(const char* dir_path) {
     struct stat dir_stat;
     if (stat(dir_path, &dir_stat) != 0) { // 디렉터리가 없을 때
-        printf("디렉터리가 존재하지 않습니다. %s를 생성합니다...\n", dir_path);
-        if (mkdir(dir_path, 0755) != 0) { // 디렉터리 생성
-            perror("디렉터리 생성 실패");
-            exit(EXIT_FAILURE);
-        }
+        printf("디렉터리가 존재하지 않습니다: %s\n", dir_path);
     } else if (!S_ISDIR(dir_stat.st_mode)) { // 디렉터리가 아니라면 오류
         fprintf(stderr, "%s는 디렉터리가 아닙니다.\n", dir_path);
         exit(EXIT_FAILURE);
+    } else {
+        printf("디렉터리가 이미 존재합니다: %s\n", dir_path);
     }
 }
 
 // 파일 복사
 int copy_file(const char* source_path, const char* dest_path) {
-
-    //fopen 파일 읽기
     FILE* source = fopen(source_path, "rb");
     if (!source) {
         perror("소스 파일 열기 실패");
@@ -112,13 +102,13 @@ int copy_file(const char* source_path, const char* dest_path) {
         fclose(source);
         return -1;
     }
-    //파일 쓰기
+
     char buffer[4096];
     size_t bytes;
     while ((bytes = fread(buffer, 1, sizeof(buffer), source)) > 0) {
         fwrite(buffer, 1, bytes, dest);
     }
-    //파일 닫기
+
     fclose(source);
     fclose(dest);
     return 0;
@@ -126,7 +116,6 @@ int copy_file(const char* source_path, const char* dest_path) {
 
 // 복사된 파일이 실제로 존재하는지 확인
 int check_file_exists(const char* file_path) {
-    //stat 함수 이용해서 구현
     struct stat file_stat;
     return stat(file_path, &file_stat);
 }
