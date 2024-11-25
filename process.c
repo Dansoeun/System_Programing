@@ -30,14 +30,14 @@ void died(pid_t pid)
 }
 
 // 해당하는 [브랜치명(경로)] 있는 process 탐색 
-char * Get_Branch(process list[100], char target[512])
+pid_t Get_Branch(process list[100], char target[512])
 {
     for(int i=0; i<100; i++)
     {
         if (strcmp(list[i].branch,target)==0)
         {
             //return list[i];
-            return list[i].branch;
+            return list[i].pid;
         }
     }
 
@@ -62,4 +62,17 @@ char * Make_Pipe(process target)
 
     return pipe_name;
 
+}
+
+char* Get_FIFO_name(process list[100], pid_t target)
+{
+    for(int i=0; i<100; i++)
+    {
+        if (list[i].pid==target)
+        {
+            return list[i].fifo_file_name;
+        }
+    }
+
+    return NULL;
 }

@@ -3,16 +3,27 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/msg.h>
 #include <fcntl.h>
 #include "cp.h"
+#include "process.h"
 
-//av[0]: shmid, share memory identifier, av[1]: key_t, message queue identifier, 
+//message received, from exisiting branch  .. 
+void sig_to_branch(char branchname[], int signum,pid_t branch_pid) 
+{
+    printf("Request to branch .. ");
+    kill(signum,branch_pid);
+}
+
+//av[0]: shmid, share memory identifier, av[1]: key_t(int), message queue identifier, 
 //av[2]: checkout file number (global var)
-void main(int ac, char *av[])
+//av[3]: branch name for checkout
+//av[4]: process list
+int main(int ac, char *av[])
 {
     int shmid=0;
     int msgid=0;
@@ -20,21 +31,27 @@ void main(int ac, char *av[])
     shmid=shmget(av[0],NULL,0); //read and write permission
     char mkfifoname[512]={'\0'};
     char checkoutfile[2048]={'\0'};
+    char buf[2048]={'\0'};
     int command=-1;
     char ch=' ';
     int pd=0;
-
+    int n_char=0;
     int creat=0;
     int len=0;
+    pid_t exisiting_branch=-1;
 
-    msgid=msgget(av[1],0); // 0 -> existing message queue return
+    /*Branch connection*/
+    exisiting_branch=Get_Branch(av[4],av[3]);
+    signal(SIGUSR2,sig_to_branch);
+    msgid=msgget(av[1],0666); // 0 -> existing message queue return
+    len=msgrcv(msgid,&mkfifoname,512,0,0); //message received, from exisiting branch  .. 
 
-    len=msgrcv(msgid,&mkfifoname,512,0,0);
 
-    sprintf(checkoutfile,"checkoutfile_%d.c",av[2]);
+    sprintf(checkoutfile,"checkoutfile_%d.c",av[2]); //checkout content file name 
 
     Copy(mkfifoname,checkoutfile);
 
+    //1: pull , 2: create branch 
     printf("If you want to pull after checking out, type 1 and 2 if you want to create a branch");
 
     while ((command!=1) && command!=2)
@@ -52,7 +69,7 @@ void main(int ac, char *av[])
     {
         //now (branch) execvp, copy with checkout branch file 
         execvp(mkfifoname,checkoutfile); //first parameter file name check plz
-        return; 
+        
     }
     else 
     {
@@ -67,8 +84,15 @@ void main(int ac, char *av[])
             exit(EXIT_FAILURE);
         }
         //message queue push code 
+        while ((n_char=read(checkoutfile,&buf,2048))>0)
+        {
+            if (msgsnd(av[1], &buf,2048,IPC_NOWAIT)==-1) // msgsend to file content 
+            {
+                perror("msgsnd");
+                exit(1);
+            }
+        }
     }
 
-
-
+    return;
 }

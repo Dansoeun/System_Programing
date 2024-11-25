@@ -7,11 +7,13 @@ typedef struct Process
 {
     pid_t pid;
     char branch[512];
+    char fifo_file_name[512];
 }process;
 
 
 void kills();
 void died(pid_t pid);
-process Get_Branch(process list[100], char target[512]);
+pid_t Get_Branch(process list[100], char target[512]);
+char* Get_FIFO_name(process list[100], pid_t target);
 
 #endif
