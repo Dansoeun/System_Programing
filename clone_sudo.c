@@ -8,7 +8,7 @@
 
 #define PATH_MAX 4096 //임시로
 
-// 함수 선언
+// 함수 선언부분
 char* get_absolute_path(const char* input_path);          // 절대 경로로 변환
 void no_directory_message(const char* dir_path);          // 디렉터리 존재 확인 및 메시지 출력
 int copy_file(const char* source_path, const char* dest_path); // 파일 복사
