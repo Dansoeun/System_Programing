@@ -10,7 +10,7 @@
 
 #define PATH_MAX 4096 // 임시로
 
-int main(int argc, char* argv[]) {
+void clone(int argc, char* argv[]) {
     if (argc < 2) {
         fprintf(stderr, "사용법: %s <파일 경로> [저장 디렉터리]\n", argv[0]);
         return EXIT_FAILURE;
