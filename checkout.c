@@ -19,11 +19,12 @@ void sig_to_branch(char branchname[], int signum,pid_t branch_pid)
     kill(signum,branch_pid);
 }
 
-//av[0]: shmid, share memory identifier, av[1]: key_t(int), message queue identifier, 
+//av[0]: shmid, share memory identifier, 
+//av[1]: key_t(int), message queue identifier, 
 //av[2]: checkout file number (global var)
 //av[3]: branch name for checkout
 //av[4]: process list
-int main(int ac, char *av[])
+void checkout(int ac, char *av[])
 {
     int shmid=0;
     int msgid=0;
@@ -42,14 +43,15 @@ int main(int ac, char *av[])
 
     /*Branch connection*/
     exisiting_branch=Get_Branch(av[4],av[3]);
-    signal(SIGUSR2,sig_to_branch);
+    sig_to_branch(av[3],SIGUSR2,exisiting_branch);
+
+    //message queue
     msgid=msgget(av[1],0666); // 0 -> existing message queue return
     len=msgrcv(msgid,&mkfifoname,512,0,0); //message received, from exisiting branch  .. 
 
-
     sprintf(checkoutfile,"checkoutfile_%d.c",av[2]); //checkout content file name 
 
-    Copy(mkfifoname,checkoutfile);
+    Copy(mkfifoname,checkoutfile); //checkoutfile create 
 
     //1: pull , 2: create branch 
     printf("If you want to pull after checking out, type 1 and 2 if you want to create a branch");
@@ -69,8 +71,8 @@ int main(int ac, char *av[])
     {
         //now (branch) execvp, copy with checkout branch file 
         execvp(mkfifoname,checkoutfile); //first parameter file name check plz
-        
     }
+
     else 
     {
         //checkoutfile message push to branch 
