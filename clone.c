@@ -11,6 +11,7 @@
 #define PATH_MAX 4096 // 임시로
 
 int main(int argc, char* argv[]) {
+    //argv[1] 파일경로 argv[2] : 레퍼지토리 경로
     if (argc < 2) {
         fprintf(stderr, "사용법: %s <파일 경로> [저장 디렉터리]\n", argv[0]);
         return EXIT_FAILURE;
