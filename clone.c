@@ -10,7 +10,7 @@
 
 #define PATH_MAX 4096 // 임시로
 
-void clone(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
     if (argc < 2) {
         fprintf(stderr, "사용법: %s <파일 경로> [저장 디렉터리]\n", argv[0]);
         return EXIT_FAILURE;
@@ -21,8 +21,17 @@ void clone(int argc, char* argv[]) {
     char* absolute_file_path = get_absolute_path(file_path);
 
     // Step 2: 저장 디렉터리 결정
-    const char* default_dir = "~/clone_repos"; // 기본 저장 디렉터리
-    const char* save_dir = (argc > 2) ? argv[2] : default_dir;
+    const char* default_dir = "~/clone_repos"; // 기본 저장 디렉터리(추후 수정?)
+    const char* save_dir;
+    if (argc >2)
+    {
+        save_dir = argv[2];
+    }
+    else
+    {
+        save_dir = default_dir;
+    }
+    
 
     // 디렉터리 존재 여부 메시지 출력
     no_directory_message(save_dir);
