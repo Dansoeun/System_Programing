@@ -6,7 +6,6 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>  // 공유 메모리 관련 함수 사용을 위한 헤더
-
 #include "process.h"
 #include "CreateBranch.h"
 
@@ -77,5 +76,5 @@ void branch(int argc, char *argv[]) {   //int main()
     }
 
     CreateBranch(branch_name, shmid, shmaddr, master_fifo_path);
-    return 0;
+    return;
 }

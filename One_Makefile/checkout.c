@@ -78,7 +78,7 @@ void checkout(int ac, char *av[])
         //checkoutfile message push to branch 
         char file_fifoe[513]={'\0'};
         strncpy(file_fifoe,"./",2);
-        strnpy(file_fifoe+2,checkoutfile,strlen(checkoutfile)+1);
+        strncpy(file_fifoe+2,checkoutfile,strlen(checkoutfile)+1);
 
         if (mkfifo(file_fifoe,0666)==-1)
         {

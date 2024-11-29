@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall
-OBJS = add.o checkout.o cp.o pushpull_main.o push_to_remote.o pull_from_remote.o copy_file.o compare_files.o branch.o CreateBranch.o process.o clone.o absolute_path.o directory_check.o file_copy.o file_check.o
+OBJS = main.o add.o checkout.o cp.o pushpull_main.o push_to_remote.o pull_from_remote.o copy_file.o compare_files.o branch.o CreateBranch.o process.o clone.o absolute_path.o directory_check.o file_copy.o file_check.o
 TARGET = app.out
 
 all: $(TARGET)
@@ -8,9 +8,13 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS)
 
+#main 
+main.o: main.c add.h checkout.h pushpullheader.h branch.h clone.h
+	$(CC) -c main.c
+
 #add 부분 
-add.o: git_add.c
-	$(CC) -c git_add.c
+add.o: add.c add.h
+	$(CC) -c add.c
 
 # checkout 부분
 checkout.o: cp.h checkout.c 
@@ -63,4 +67,5 @@ file_check.o: file_check.h file_check.c
 
 # clean rule
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm $(OBJS)
+	rm $(TARGET)

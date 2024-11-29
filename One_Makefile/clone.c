@@ -14,7 +14,7 @@ void clone(int argc, char* argv[]) {
     //argv[1] 파일경로 argv[2] : 레퍼지토리 경로
     if (argc < 2) {
         fprintf(stderr, "사용법: %s <파일 경로> [저장 디렉터리]\n", argv[0]);
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     // Step 1: 파일 경로 처리
@@ -63,5 +63,5 @@ void clone(int argc, char* argv[]) {
     }
 
     free(absolute_file_path);
-    return EXIT_SUCCESS;
+    return;
 }
