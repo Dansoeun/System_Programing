@@ -33,7 +33,7 @@ void add(int argc, char *argv[])
 	if (argc < 2){
 		perror("argc\n");
 	}
-	int msqid = argv[0];
+	int msqid = atoi(argv[0]);
 	const char *path = argv[1];	//파일 경로 받기
 	if (is_directory(path)) {
         handle_directory(msqid, path);

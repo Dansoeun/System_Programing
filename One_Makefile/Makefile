@@ -9,7 +9,7 @@ $(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS)
 
 #main 
-main.o: main.c add.h checkout.h pushpullheader.h branch.h clone.h
+main.o: main.c add.h add.c checkout.h checkout.c pushpullheader.h pushpull_main.c branch.h branch.c clone.h clone.c
 	$(CC) -c main.c
 
 #add 부분 
@@ -51,19 +51,19 @@ process.o: process.h process.c
 
 # clone
 clone.o: clone.c
-	$(CC) $(CFLAGS) -c clone.c
+	$(CC) -c clone.c
 
 absolute_path.o: absolute_path.h absolute_path.c 
-	$(CC) $(CFLAGS) -c absolute_path.c
+	$(CC) -c absolute_path.c
 
 directory_check.o: directory_check.h directory_check.c
-	$(CC) $(CFLAGS) -c directory_check.c
+	$(CC) -c directory_check.c
 
 file_copy.o: file_copy.h file_copy.c 
-	$(CC) $(CFLAGS) -c file_copy.c
+	$(CC) -c file_copy.c
 
 file_check.o: file_check.h file_check.c
-	$(CC) $(CFLAGS) -c file_check.c
+	$(CC) -c file_check.c
 
 # clean rule
 clean:

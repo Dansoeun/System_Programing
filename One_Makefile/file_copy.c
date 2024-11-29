@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "file_copy.h"
 
-int copy_file(const char* source_path, const char* dest_path) {
+int clone_copy_file(const char* source_path, const char* dest_path) {
     FILE* source = fopen(source_path, "rb");
     if (!source) {
         perror("소스 파일 열기 실패");

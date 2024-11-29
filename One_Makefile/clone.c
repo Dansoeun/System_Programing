@@ -45,7 +45,7 @@ void clone(int argc, char* argv[]) {
         char dest_path[PATH_MAX];
         snprintf(dest_path, sizeof(dest_path), "%s/%s", save_dir, strrchr(absolute_file_path, '/') + 1);
 
-        if (copy_file(absolute_file_path, dest_path) == 0) {
+        if (clone_copy_file(absolute_file_path, dest_path) == 0) {
             printf("파일 복사가 성공적으로 완료되었습니다.\n");
             printf("저장 경로: %s\n", dest_path);
 

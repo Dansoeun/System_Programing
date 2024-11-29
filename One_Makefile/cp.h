@@ -1,6 +1,6 @@
 #ifndef CP_H
 #define CP_H
 
-void Copy(int ac, char *av[]);
+void Copy(char *av1, char *av2);
 
 #endif

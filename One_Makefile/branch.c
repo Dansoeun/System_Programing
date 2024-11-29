@@ -17,11 +17,12 @@ int cnt = 0;
 void checkout_handler(int signum) {
     pid_t target = 0;
     char fifoname[512] = {'\0'};
-    char branchname[100] = {'\0'};
+    char branchname[512] = {'\0'};
 
     printf("Please write the name of the branch you want to check out: ");
     scanf("%s", branchname);
     target = Get_Branch(list, branchname);
+
     strcpy(fifoname, Get_FIFO_name(list, target));
 
     printf("Target FIFO: %s\n", fifoname);

@@ -37,7 +37,10 @@ int main(int ac, char *av[])
     char buf[1000]={'\0'};
     char command[5][1000]={'\0'};
 
-    repo_key=ftok(av[0],av[1]);
+    repo_key=ftok(av[0],1);
+    //to setup branch, allocate 3KB share memory 
+    shmid=shmget(repo_key,4096,IPC_CREAT |0644);
+
     msid=msgget(repo_key,IPC_CREAT | 0644); //permission : rw-r-----
 
     //second parameter 0 -> now message queue identifier return
@@ -46,9 +49,6 @@ int main(int ac, char *av[])
         perror("msgget");
         exit(1);
     }
-
-    //to setup branch, allocate 3KB share memory 
-    shmid=shmget(repo_key,4096,IPC_CREAT |0644);
     
     if (shmid==-1)
     {
@@ -56,18 +56,12 @@ int main(int ac, char *av[])
         exit(1);
     }
 
-    while (fgets(buf,1000,stdin)!=NULL)
+    do 
     {
         printf("input command\n");
         
 
-    }
-
-
-
-
-
-
+    }while(fgets(buf,1000,stdin)!=NULL);
 
     return 0;
 }
