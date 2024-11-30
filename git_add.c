@@ -7,10 +7,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
-// #include <signal.h>
-// #include <sys/shm.h>
-// #include <sys/types.h>
-// #include <errno.h>
+#include <glob.h>
 
 #define STAGE_DIR ".mygit_stage"
 #define SENDSIZE 4096
@@ -26,19 +23,20 @@ int is_directory(const char *path);
 void send_file_to_stage(int msqid, const char *file_path);
 void handle_directory(int msqid, const char *dir_path);
 
-
 void add(int argc, char *argv[])
 {
 	if (argc < 2){
 		perror("argc\n");
 	}
-	int msqid = argv[0];
-	const char *path = argv[1];	//파일 경로 받기
-	if (is_directory(path)) {
-        handle_directory(msqid, path);
-    } else {
-        send_file_to_stage(msqid, path);
-    }	
+	int msqid = argv[1]; //메세지 큐
+    for (int i = 2; i < argc; i++) {  // 모든 인자를 처리하도록 루프
+	    const char *path = argv[i];	//파일 경로 받기
+        if (is_directory(path)) {
+            handle_directory(msqid, path); // 디렉터리 처리
+        } else {
+            send_file_to_stage(msqid, path); // 파일 처리
+        }
+    }
 }
 int is_absolute_path(const char *path) {
     return path[0] == '/'; // 슬래시로 시작하면 절대 경로
@@ -48,8 +46,8 @@ int is_directory(const char *path){		//경로가 directory인지 확인
 	if (stat(path, &path_stat) != 0) return 0;
 	return S_ISDIR(path_stat.st_mode);
 }
+
 void send_file_to_stage(int msqid, const char *file_path) {
-    int msgid;
     struct file_message msg;
 
     // 파일 열기
