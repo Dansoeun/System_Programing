@@ -86,6 +86,7 @@ int main(int ac, char *av[])
     void *shmaddr;
     char buf[1000]={'\0'};
     char command[5][1000]={'\0'};
+    char *argv[5]={NULL};
     int idx=0;
 
     repo_key=ftok(av[0],1);
@@ -118,10 +119,11 @@ int main(int ac, char *av[])
 
         for(int i=0; i<idx; i++)
         {
-            printf("command[%d]:%s\n",i,command[i]);
+            argv[i]=command[i];
+            //printf("command[%d]:%s\n",i,command[i]);
         }
 
-        Command_Exception(command,&idx);
+        Command_Exception(argv,&idx);
     }
 
     return 0;

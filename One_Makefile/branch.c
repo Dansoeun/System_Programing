@@ -53,11 +53,11 @@ void branch(int argc, char *argv[]) {   //int main()
         exit(1);
     }
 
-    repo_key = ftok(argv[0], 1);
+    /*repo_key = ftok(argv[3], 1);
     if (repo_key == -1) {
         perror("ftok");
         exit(1);
-    }
+    }*/
 
     shmid = shmget(repo_key, SHM_SIZE, IPC_CREAT | 0644);
     if (shmid == -1) {
