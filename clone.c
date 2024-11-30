@@ -11,11 +11,10 @@
 #define PATH_MAX 4096 // 임시로
 
 void clone(int argc, char* argv[]) {
-    //argv[1] 파일경로 argv[2] : 레퍼지토리 경로
+    // argv[1] 파일경로 argv[2] : 레퍼지토리 경로
     if (argc < 2) {
         fprintf(stderr, "사용법: %s <파일 경로> [저장 디렉터리]\n", argv[0]);
-        return EXIT_FAILURE;
-    }
+        return; //void 형
 
     // Step 1: 파일 경로 처리
     char* file_path = argv[1];
@@ -24,15 +23,11 @@ void clone(int argc, char* argv[]) {
     // Step 2: 저장 디렉터리 결정
     const char* default_dir = "~/clone_repos"; // 기본 저장 디렉터리(추후 수정?)
     const char* save_dir;
-    if (argc >2)
-    {
+    if (argc > 2) {
         save_dir = argv[2];
-    }
-    else
-    {
+    } else {
         save_dir = default_dir;
     }
-    
 
     // 디렉터리 존재 여부 메시지 출력
     no_directory_message(save_dir);
@@ -63,5 +58,5 @@ void clone(int argc, char* argv[]) {
     }
 
     free(absolute_file_path);
-    return EXIT_SUCCESS;
+    return; // 함수 종료
 }
