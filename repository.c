@@ -44,7 +44,7 @@ int main(int ac, char *av[])
 {
     key_t repo_key;  //create IPC object to repository
     Msgbuf msgbuf;
-    sigset_t mask;
+    //sigset_t mask;
     int msid; //message queue identifier
     int n_char=0;
     int shmid;
@@ -71,9 +71,11 @@ int main(int ac, char *av[])
     }
 
     //branch connect ,write and create
+    /*
     sigfillset(&mask);
     sigdelset(&mask,SIGUSR1);
     sigset(SIGUSR1,sig_handler);
+    */
 
     //if signal listen, connect shared memory ,create and write data at branch
     if (av[3]=='1') //crate branch bit 
