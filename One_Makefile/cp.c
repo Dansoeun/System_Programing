@@ -12,7 +12,7 @@ void Copy(char *av1,char *av2)
     int out_fd=1;
     int n_char=0;
     int w_char=0;
-    char buf[1024]={'\0'};
+    char buf[4096]={'\0'};
 
     in_fd=open(av1, O_RDONLY);
     out_fd=creat(av2,COPYMODE);
@@ -23,7 +23,7 @@ void Copy(char *av1,char *av2)
         exit(EXIT_FAILURE);
     }
 
-    while ((n_char=read(in_fd,buf,1024))>0)
+    while ((n_char=read(in_fd,buf,4096))>0)
     {
         w_char=write(out_fd,buf,n_char);
 

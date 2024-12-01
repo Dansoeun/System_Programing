@@ -1,5 +1,12 @@
 #include "pushpullheader.h"
 
+/*
+git push origin [branch name]
+git pull origin [branch name]
+push:add msqid에서 수신 후 파일 전송 
+브랜치명에 해당하는 fifo 파일을 열어서 add 된 내용을 작성 
+*/
+
 void push_to_remote(const char *local_dir, const char *remote_dir, const char *file_name) {
     // 공유 메모리 설정
     int shmid = shmget(IPC_PRIVATE, sizeof(FileInfo), IPC_CREAT | 0644);
@@ -16,6 +23,14 @@ void push_to_remote(const char *local_dir, const char *remote_dir, const char *f
         perror("shmat");
         exit(1);
     }
+
+        int len=0;
+    //메시지 수신 테스트
+    /*
+    while ((len=msgrcv(msqid,&msg,SENDSIZE,0,0))>0)
+    {
+        printf("Received Msg=%s, len=%d\n",msg.file_contents,len); //msg.contents에 다 저장됨 
+    }*/
 
     // 로컬파일 정보 설정
     snprintf(shm_ptr->file_name, sizeof(shm_ptr->file_name), "%s", file_name);

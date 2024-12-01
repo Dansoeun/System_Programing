@@ -11,6 +11,10 @@
 #include "branch.h"
 #include "clone.h"
 #include "add.h"
+#include "process.h"
+
+process list[100];
+int cnt=0;
 
 //message buffer struct 
 typedef struct msgbuf 
@@ -41,16 +45,24 @@ void Split_Command(char command[][1000], char demand[] , int *idx)
 
 void Command_Exception(char *command[], int *idx)
 {
+    char addfilename[100]={'\0'};
+    char c_msgqid[100]={'\0'};
+
     if (strcmp(command[0],"git")!=0)
     {
         printf("usage: git [command] [option]\n");
     }
     else 
     {
-        if (strcmp(command[1],"add")==0)
+        if (strcmp(command[1], "add") == 0)
         {
-            add(*idx,command);
-        }
+            char *result = add(*idx, command); // add 함수에서 문자열 반환
+            if (result != NULL)
+            {
+                strcpy(addfilename, result); // 복사
+            }
+            printf("add file name:%s\n",addfilename);
+        }   
 
         if (strcmp(command[1],"branch")==0)
         {
@@ -69,7 +81,10 @@ void Command_Exception(char *command[], int *idx)
 
         if (strcmp(command[1],"push")==0 || strcmp(command[1],"pull")==0)
         {
-            pushpull_main(*idx,command);   
+            strcpy(command[*idx],addfilename);
+            //command[*idx]=addfilename;
+            *idx+=1;
+            pushpull_main(*idx,command);
         }
     }
 }
@@ -93,7 +108,8 @@ int main(int ac, char *av[])
     //to setup branch, allocate 3KB share memory 
     shmid=shmget(repo_key,4096,IPC_CREAT |0644);
 
-    msid=msgget(repo_key,IPC_CREAT | 0644); //permission : rw-r-----
+    msid=msgget(repo_key,IPC_CREAT | 0644); //permission : rw-r-----, id=0, 동일
+    //printf("msid:%d\n",msid);
 
     //second parameter 0 -> now message queue identifier return
     if ((msid=msgget(repo_key,0))<0)
@@ -113,7 +129,7 @@ int main(int ac, char *av[])
     {
         printf("input command\n");
         buf[strlen(buf)-1]='\0';
-        printf("buf:%s\n",buf);
+        //printf("buf:%s\n",buf);
         idx=0;
         Split_Command(command,buf,&idx);
 

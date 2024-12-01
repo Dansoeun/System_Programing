@@ -11,8 +11,8 @@
 
 #define SHM_SIZE 4096 // 공유 메모리 크기
 
-process list[100];
-int cnt = 0;
+extern process list[100];
+extern int cnt;
 
 void checkout_handler(int signum) {
     pid_t target = 0;

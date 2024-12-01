@@ -1,6 +1,15 @@
 #ifndef ADD_H
 #define ADD_H
 
-void add(int argc, char *argv[]);
+#define STAGE_DIR ".mygit_stage"
+#define SENDSIZE 4096
+
+struct file_message {
+    long msg_type;          // 메시지 타입 (1로 고정)
+    char file_name[256];    // 파일 이름
+    char file_contents[SENDSIZE]; // 파일 내용 (한 번에 읽을 최대 크기)
+};
+
+char * add(int argc, char *argv[]);
 
 #endif

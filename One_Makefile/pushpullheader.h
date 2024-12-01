@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include "add.h"
 
 // 공유 메모리에 저장할 파일 정보 구조체
 typedef struct file_info {

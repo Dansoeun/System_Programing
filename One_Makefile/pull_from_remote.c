@@ -1,5 +1,12 @@
 #include "pushpullheader.h"
 
+/*
+git push origin [branch name]
+git pull origin [branch name]
+push:add msqid에서 수신 후 파일 전송 
+브랜치명에 해당하는 fifo 파일을 열어서 add 된 내용을 작성 
+*/
+
 void pull_from_remote(const char *remote_dir, const char *local_dir, const char *file_name) {
     // 공유 메모리 설정
     int shmid = shmget(IPC_PRIVATE, sizeof(FileInfo), IPC_CREAT | 0644);
