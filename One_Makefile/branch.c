@@ -8,6 +8,7 @@
 #include <sys/shm.h>  // 공유 메모리 관련 함수 사용을 위한 헤더
 #include "process.h"
 #include "CreateBranch.h"
+#include "global.h"
 
 #define SHM_SIZE 4096 // 공유 메모리 크기
 
@@ -29,7 +30,7 @@ void checkout_handler(int signum) {
 }
 
 void branch(int argc, char *argv[]) {   //int main()
-    key_t repo_key;
+    key_t repo=repo_key;
     int shmid;
     void *shmaddr;
     char branch_name[100];
@@ -53,13 +54,7 @@ void branch(int argc, char *argv[]) {   //int main()
         exit(1);
     }
 
-    /*repo_key = ftok(argv[3], 1);
-    if (repo_key == -1) {
-        perror("ftok");
-        exit(1);
-    }*/
-
-    shmid = shmget(repo_key, SHM_SIZE, IPC_CREAT | 0644);
+    shmid = shmget(repo, SHM_SIZE, IPC_CREAT | 0644);
     if (shmid == -1) {
         perror("shmget");
         exit(1);

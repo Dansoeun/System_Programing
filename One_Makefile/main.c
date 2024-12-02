@@ -54,6 +54,11 @@ void Command_Exception(char *command[], int *idx) {
         if (strcmp(command[1], "checkout") == 0) {
             checkout(*idx, command);
         }
+
+        if (strcmp(command[1],"push")==0 || strcmp(command[1],"pull")==0)
+        {
+            pushpull_main(*idx,command);
+        }
     }
 }
 

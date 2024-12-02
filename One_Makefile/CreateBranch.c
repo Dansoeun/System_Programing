@@ -22,7 +22,7 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
         snprintf((char *)shmaddr, SHM_SIZE, "[Master branch initialized]\n");
 
         snprintf(fifo_path, sizeof(fifo_path), "%s", master_fifo_path);
-        if (mkfifo(fifo_path, 0666) == -1 && errno != EEXIST) {
+        if (mkfifo(fifo_path, 0777) == -1 && errno != EEXIST) {
             perror("mkfifo");
             exit(1);
         }
@@ -32,7 +32,7 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
     }
 
     snprintf(fifo_path, sizeof(fifo_path), "./%s_fifo", b_name);
-    if (mkfifo(fifo_path, 0666) == -1 && errno != EEXIST) {
+    if (mkfifo(fifo_path, 0777) == -1 && errno != EEXIST) {
         perror("mkfifo");
         exit(1);
     }
@@ -46,7 +46,7 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
 
     if (pid == 0) {
         int branch_fifo_fd;
-        branch_fifo_fd = open(fifo_path, O_RDONLY);
+        branch_fifo_fd = open(fifo_path, O_RDONLY | O_NONBLOCK);
         if (branch_fifo_fd == -1) {
             perror("open branch fifo");
             exit(1);

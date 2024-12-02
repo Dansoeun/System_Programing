@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <sys/msg.h>
 #include "add.h"
 
 // 공유 메모리에 저장할 파일 정보 구조체

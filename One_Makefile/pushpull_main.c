@@ -12,7 +12,7 @@ void pushpull_main(int argc, char *argv[]) {
     }
 
     const char *file_name = argv[1];  // 파일 이름
-    const char *action = argv[2];     // push 또는 pull
+    const char *action = argv[1];     // push 또는 pull
     const char *local_dir = argv[3];  // 로컬 디렉토리
 
     const char *remote_dir = "remote_repository";  // 원격저장소는 정해짐

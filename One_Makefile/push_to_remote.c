@@ -1,12 +1,7 @@
 #include "pushpullheader.h"
-#include <sys/msg.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include "global.h"
+
+#define SHM_SIZE 4096 // 공유 메모리 크기
 
 // 메시지 버퍼 구조체
 typedef struct msgbuf {
@@ -20,11 +15,37 @@ void push_to_remote(int argc, char *argv[]) {
         exit(1);
     }
 
-    int msqid = 0; // 메시지 큐 ID (고정값 0)
+    for(int i=0; i<argc; i++)
+    {
+        printf("push i:%d argv:%s\n",i,argv[i]);
+    }
+
+    key_t repo_key = repo_key; // 공유 메모리 키
+    int shmid;
+    void *shmaddr;
+
+    // 공유 메모리 접근
+    shmid = shmget(repo_key, SHM_SIZE, 0644);
+    if (shmid == -1) {
+        perror("공유 메모리 접근 실패");
+        exit(1);
+    }
+
+    shmaddr = shmat(shmid, NULL, 0);
+    if (shmaddr == (void *)-1) {
+        perror("공유 메모리 연결 실패");
+        exit(1);
+    }
+
+    printf("공유 메모리 연결 완료. 메모리 주소: %p\n", shmaddr);
+
+    int msqid = msid; // 메시지 큐 ID
     Msgbuf msg;
 
+    printf("push msqid:%d\n", msqid);
+
     // FIFO 파일 열기
-    int fifo_fd = open(argv[3], O_WRONLY | O_APPEND);
+    int fifo_fd = open(argv[3], O_WRONLY | O_NONBLOCK);
     if (fifo_fd == -1) {
         perror("FIFO 파일 열기 실패");
         exit(1);
@@ -59,5 +80,11 @@ void push_to_remote(int argc, char *argv[]) {
 
     // FIFO 파일 닫기
     close(fifo_fd);
+
+    // 공유 메모리 분리
+    if (shmdt(shmaddr) == -1) {
+        perror("공유 메모리 분리 실패");
+    }
+
     printf("\033[7m브랜치 FIFO 파일(%s) 갱신 완료.\033[0m\n", argv[3]);
 }
