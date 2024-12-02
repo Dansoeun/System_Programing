@@ -22,10 +22,12 @@ typedef struct file_info {
 } FileInfo;
 
 
+
 // 함수 선언
 void copy_file(const char *origin_dir, const char *copy_dir);
 int compare_files(const char *file1, const char *file2);
-void push_to_remote(const char *local_dir, const char *remote_dir, const char *file_name);
+void push_to_remote(int argc, char *argv[]);
+//void push_to_remote(const char *local_dir, const char *remote_dir, const char *file_name);
 void pull_from_remote(const char *remote_dir, const char *local_dir, const char *file_name);
 void pushpull_main(int argc, char *argv[]);
 

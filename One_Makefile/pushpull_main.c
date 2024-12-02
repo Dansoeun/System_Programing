@@ -26,7 +26,8 @@ void pushpull_main(int argc, char *argv[]) {
     // 입력된 작업이 "push"일 경우
     if (strcmp(action, "push") == 0)
     {
-        push_to_remote(local_dir, remote_dir, file_name);
+        push_to_remote(argc,argv);
+        //push_to_remote(local_dir, remote_dir, file_name);
     }
     // 입력된 작업이 "pull"일 경우
     else if (strcmp(action, "pull") == 0)

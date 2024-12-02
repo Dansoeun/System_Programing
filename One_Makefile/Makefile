@@ -9,11 +9,11 @@ $(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS)
 
 #main 
-main.o: main.c add.h add.c checkout.h checkout.c pushpullheader.h pushpull_main.c branch.h branch.c clone.h clone.c
+main.o: main.c add.h add.c checkout.h checkout.c pushpullheader.h pushpull_main.c branch.h branch.c clone.h clone.c global.h
 	$(CC) -c main.c
 
 #add 부분 
-add.o: add.c add.h
+add.o: add.c add.h global.h
 	$(CC) -c add.c
 
 # checkout 부분
