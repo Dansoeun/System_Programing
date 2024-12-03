@@ -19,51 +19,34 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
     char fifo_path[256];
 
     if (strcmp(b_name, "master") == 0) {
+        // master branch 처리
         snprintf((char *)shmaddr, SHM_SIZE, "[Master branch initialized]\n");
-
         snprintf(fifo_path, sizeof(fifo_path), "%s", master_fifo_path);
+        
         if (mkfifo(fifo_path, 0777) == -1 && errno != EEXIST) {
             perror("mkfifo");
             exit(1);
         }
 
+        // master branch를 위한 읽기 프로세스 생성
+        pid = fork();
+        if (pid == 0) {
+            while (1) {
+                int master_fd = open(fifo_path, O_RDONLY);
+                if (master_fd != -1) {
+                    char buffer[4096] = {0};
+                    ssize_t bytes_read = read(master_fd, buffer, sizeof(buffer));
+                    if (bytes_read > 0) {
+                        printf("[Master Branch] Received: %s\n", buffer);
+                    }
+                    close(master_fd);
+                }
+                sleep(1);
+            }
+            exit(0);
+        }
+        
         printf("Master branch created with FIFO '%s'.\n", fifo_path);
         return;
-    }
-
-    snprintf(fifo_path, sizeof(fifo_path), "./%s_fifo", b_name);
-    if (mkfifo(fifo_path, 0777) == -1 && errno != EEXIST) {
-        perror("mkfifo");
-        exit(1);
-    }
-
-    pid = fork();
-    if (pid < 0) {
-        perror("fork");
-        unlink(fifo_path);
-        exit(1);
-    }
-
-    if (pid == 0) {
-        int branch_fifo_fd;
-        branch_fifo_fd = open(fifo_path, O_RDONLY | O_NONBLOCK);
-        if (branch_fifo_fd == -1) {
-            perror("open branch fifo");
-            exit(1);
-        }
-
-        while (1) {
-            char buffer[256] = {0};
-            if (read(branch_fifo_fd, buffer, sizeof(buffer)) > 0) {
-                printf("[Branch: %s] Received: %s\n", b_name, buffer);
-            }
-        }
-    } else {
-        strcpy(list[cnt].branch, b_name);
-        strcpy(list[cnt].fifo_file_name, fifo_path);
-        list[cnt].pid = pid;
-        cnt += 1;
-
-        printf("Branch '%s' created with PID %d and FIFO '%s'.\n", b_name, pid, fifo_path);
     }
 }

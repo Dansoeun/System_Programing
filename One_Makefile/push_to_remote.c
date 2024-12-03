@@ -15,11 +15,6 @@ void push_to_remote(int argc, char *argv[]) {
         exit(1);
     }
 
-    for(int i=0; i<argc; i++)
-    {
-        printf("push i:%d argv:%s\n",i,argv[i]);
-    }
-
     key_t repo_key = repo_key; // 공유 메모리 키
     int shmid;
     void *shmaddr;
@@ -44,14 +39,41 @@ void push_to_remote(int argc, char *argv[]) {
 
     printf("push msqid:%d\n", msqid);
 
-    // FIFO 파일 열기
-    int fifo_fd = open(argv[3], O_WRONLY | O_NONBLOCK);
+    // FIFO 파일 열기 (수정된 부분)
+    int fifo_fd;
+    struct stat st;
+    
+    // FIFO 파일 존재 확인
+    if (stat(argv[3], &st) == -1) {
+        fprintf(stderr, "FIFO 파일이 존재하지 않습니다: %s\n", argv[3]);
+        exit(1);
+    }
+    
+    // FIFO가 실제로 FIFO 파일인지 확인
+    if (!S_ISFIFO(st.st_mode)) {
+        fprintf(stderr, "유효하지 않은 FIFO 파일입니다: %s\n", argv[3]);
+        exit(1);
+    }
+
+    printf("FIFO 파일 열기 시도 중: %s\n", argv[3]);
+    int retry_count = 0;
+    while (retry_count < 5) {
+        fifo_fd = open(argv[3], O_WRONLY | O_NONBLOCK);
+        if (fifo_fd != -1) break;
+        
+        printf("재시도 %d/5...\n", retry_count + 1);
+        sleep(1);
+        retry_count++;
+    }
+    
     if (fifo_fd == -1) {
         perror("FIFO 파일 열기 실패");
         exit(1);
     }
-
-    printf("FIFO 파일(%s)에 메시지 전송 준비 완료.\n", argv[3]);
+    
+    // FIFO를 blocking 모드로 전환
+    int flags = fcntl(fifo_fd, F_GETFL);
+    fcntl(fifo_fd, F_SETFL, flags & ~O_NONBLOCK);
 
     // 메시지 큐에서 메시지 수신 및 FIFO 파일로 쓰기
     while (1) {
