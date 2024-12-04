@@ -12,16 +12,16 @@
 #define STAGE_DIR ".mygit_stage"
 #define SENDSIZE 4096
 
-struct file_message {
-    long msg_type;          // 메시지 타입 (1로 고정)
+struct file_message {       // 메시지를 통해 보낼 파일 구조체
+    long msg_type;          
     char file_name[256];    // 파일 이름
-    char file_contents[SENDSIZE]; // 파일 내용 (한 번에 읽을 최대 크기)
+    char file_contents[SENDSIZE]; // 파일 내용
 };
 
-int is_absolute_path(const char *path);
-int is_directory(const char *path);
-void send_file_to_stage(int msqid, const char *file_path);
-void handle_directory(int msqid, const char *dir_path);
+//int is_absolute_path(const char *path);
+int is_directory(const char *path);                         // 경로에 있는 파일이 디렉토리인지 확인
+void send_file_to_stage(int msqid, const char *file_path);  // msgsnd를 통해 파일 전송
+void handle_directory(int msqid, const char *dir_path);     // 경로가 디렉토리인 경우 재귀적으로 하위 파일 전송
 
 void add(int argc, char *argv[])
 {
@@ -38,9 +38,9 @@ void add(int argc, char *argv[])
         }
     }
 }
-int is_absolute_path(const char *path) {
-    return path[0] == '/'; // 슬래시로 시작하면 절대 경로
-}
+// int is_absolute_path(const char *path) {
+//     return path[0] == '/'; // 슬래시로 시작하면 절대 경로
+// }
 int is_directory(const char *path){		//경로가 directory인지 확인
 	struct stat path_stat;
 	if (stat(path, &path_stat) != 0) return 0;
