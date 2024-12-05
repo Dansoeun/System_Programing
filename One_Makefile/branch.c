@@ -5,12 +5,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>  // 공유 메모리 관련 함수 사용을 위한 헤더
+#include <sys/shm.h>
 #include "process.h"
 #include "CreateBranch.h"
 #include "global.h"
 
-#define SHM_SIZE 4096 // 공유 메모리 크기
+#define SHM_SIZE 4096
 
 extern process list[100];
 extern int cnt;
@@ -29,8 +29,8 @@ void checkout_handler(int signum) {
     printf("Target FIFO: %s\n", fifoname);
 }
 
-void branch(int argc, char *argv[]) {   //int main()
-    key_t repo=repo_key;
+void branch(int argc, char *argv[]) {
+    key_t repo = repo_key;
     int shmid;
     void *shmaddr;
     char branch_name[100];
@@ -54,6 +54,7 @@ void branch(int argc, char *argv[]) {   //int main()
         exit(1);
     }
 
+    // Create shared memory
     shmid = shmget(repo, SHM_SIZE, IPC_CREAT | 0644);
     if (shmid == -1) {
         perror("shmget");
@@ -66,11 +67,14 @@ void branch(int argc, char *argv[]) {   //int main()
         exit(1);
     }
 
+    // master 브랜치가 없으면 생성
     if (access(master_fifo_path, F_OK) == -1) {
         printf("Master branch not found. Creating master branch…\n");
-        CreateBranch("master", shmid, shmaddr, master_fifo_path);
+        CreateBranch("master", shmid, shmaddr, master_fifo_path); // master 브랜치 생성
     }
 
+    // master 브랜치가 존재하면 지정된 브랜치 생성
     CreateBranch(branch_name, shmid, shmaddr, master_fifo_path);
+
     return;
 }

@@ -6,7 +6,6 @@
 typedef struct Process
 {
     pid_t pid;
-    char branch[512];
     char fifo_file_name[512];
 }process;
 

@@ -34,7 +34,7 @@ pid_t Get_Branch(process list[100], char target[512])
 {
     for(int i=0; i<100; i++)
     {
-        if (strcmp(list[i].branch,target)==0)
+        if (strcmp(list[i].fifo_file_name,target)==0)
         {
             //return list[i];
             return list[i].pid;

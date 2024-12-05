@@ -1,62 +1,80 @@
 #include "pushpullheader.h"
+#include "global.h"
+#include <libgen.h>
 
-/*
-git push origin [branch name]
-git pull origin [branch name]
-push:add msqid에서 수신 후 파일 전송 
-브랜치명에 해당하는 fifo 파일을 열어서 add 된 내용을 작성 
-*/
+#define SHM_SIZE 4096
+#define BUFFER_SIZE 4096
+#define MESSAGE_DELIMITER "\n---END_OF_MESSAGE---\n"
 
-void pull_from_remote(const char *remote_dir, const char *local_dir, const char *file_name) {
-    // 공유 메모리 설정
-    int shmid = shmget(IPC_PRIVATE, sizeof(FileInfo), IPC_CREAT | 0644);
-    if (shmid == -1)
-    {
-        perror("shmget");
+void pull_from_remote(int argc, char *argv[]) {
+    if (argc < 4) {
+        fprintf(stderr, "Usage: git pull origin [branch_fifo_path]\n");
         exit(1);
     }
 
-    // 공유 메모리 연결
-    FileInfo *shm_ptr = (FileInfo *)shmat(shmid, NULL, 0);
-    if (shm_ptr == (void *)-1)
-    {
-        perror("shmat");
+    key_t repo_key = repo_key;
+    int shmid = shmget(repo_key, SHM_SIZE, IPC_CREAT | 0644);
+    if (shmid == -1) {
+        perror("공유 메모리 접근 실패");
         exit(1);
     }
 
-    // 공유 메모리에서 파일 정보 읽기
-    snprintf(shm_ptr->file_name, sizeof(shm_ptr->file_name), "%s", file_name);
-    snprintf(shm_ptr->action, sizeof(shm_ptr->action), "pull");
-    snprintf(shm_ptr->local_dir, sizeof(shm_ptr->local_dir), "%s", local_dir);
-    snprintf(shm_ptr->remote_dir, sizeof(shm_ptr->remote_dir), "%s", remote_dir);
-
-    // 로컬 파일 경로 및 원격 파일 경로 저장
-    char local_path[1024];
-    char remote_path[1024];
-
-    snprintf(local_path, sizeof(local_path), "%s/%s", local_dir, file_name);
-    snprintf(remote_path, sizeof(remote_path), "%s/%s", remote_dir, file_name);
-
-    // 로컬 파일과 원격 파일 비교 후 다르면 복사
-    if (compare_files(local_path, remote_path) != 0)
-    {
-        // 파일이 다르면 원격 파일을 로컬로 복사
-        copy_file(remote_path, local_path);
-
-        char *local_dir_only = dirname(local_path);  // 로컬 저장소만 저장 (파일이름 빼고)
-        char *remote_dir_only = dirname(remote_path); // 원격 저장소만 저장 (파일이름 빼고)
-
-        // ANSI 코드로 배경색과 텍스트 반전
-        printf("\033[7m파일 %s : %s (remote)  -> %s (local) pull 완료\033[0m\n", file_name, remote_dir_only, local_dir_only);
-    }
-    else
-    {
-        // 파일이 동일하면 pull 하지않음
-        printf("파일 %s가 이미 동일합니다. pull 하지않습니다.\n", local_path);
+    void *shmaddr = shmat(shmid, NULL, 0);
+    if (shmaddr == (void *)-1) {
+        perror("공유 메모리 연결 실패");
+        exit(1);
     }
 
-    // 공유 메모리 연결 해제
-    shmdt(shm_ptr);
-    // 공유 메모리 삭제
-    shmctl(shmid, IPC_RMID, NULL);
+    printf("공유 메모리 연결 완료. 메모리 주소: %p\n", shmaddr);
+
+    printf("FIFO 파일 열기 시도 중: %s\n", argv[3]);
+    int fifo_fd;
+    int retry_count = 0;
+    
+    while (retry_count < 5) {
+        fifo_fd = open(argv[3], O_RDONLY | O_NONBLOCK);
+        if (fifo_fd != -1) break;
+        printf("재시도 %d/5...\n", retry_count + 1);
+        sleep(1);
+        retry_count++;
+    }
+
+    if (fifo_fd == -1) {
+        perror("FIFO 파일 열기 실패");
+        exit(1);
+    }
+
+    int flags = fcntl(fifo_fd, F_GETFL);
+    fcntl(fifo_fd, F_SETFL, flags & ~O_NONBLOCK);
+
+    char buffer[BUFFER_SIZE];
+    char message[BUFFER_SIZE] = {0};  // Initialize message buffer
+    size_t message_pos = 0;
+    ssize_t bytes_read;
+
+    // Add debug output before read loop
+    printf("시작: FIFO로부터 읽기 대기 중...\n");
+
+    while ((bytes_read = read(fifo_fd, buffer, sizeof(buffer) - 1)) > 0) {
+        buffer[bytes_read] = '\0';
+        printf("받은 데이터 (%zd bytes): %s\n", bytes_read, buffer);
+        
+        char *current_pos = buffer;
+        char *delimiter_pos;
+    }
+
+    if (bytes_read == -1) {
+        perror("FIFO 읽기 실패");
+    } else {
+        printf("FIFO 파일 읽기 완료\n");
+    }
+
+    close(fifo_fd);
+    
+    if (shmdt(shmaddr) == -1) {
+        perror("공유 메모리 분리 실패");
+    }
+
+    printf("\033[7mPull 작업 완료.\033[0m\n");
+
 }
