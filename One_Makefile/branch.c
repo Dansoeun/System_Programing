@@ -29,6 +29,16 @@ void checkout_handler(int signum) {
     printf("Target FIFO: %s\n", fifoname);
 }
 
+// 브랜치가 이미 존재하는지 확인하는 함수
+int Is_Branch_Exists(const char *branch_name) {
+    for (int i = 0; i < cnt; i++) {
+        if (strcmp(list[i].fifo_file_name, branch_name) == 0) {
+            return 1; // 이미 존재
+        }
+    }
+    return 0; // 존재하지 않음
+}
+
 void branch(int argc, char *argv[]) {
     key_t repo = repo_key;
     int shmid;
@@ -38,43 +48,69 @@ void branch(int argc, char *argv[]) {
 
     signal(SIGUSR2, checkout_handler);
 
-    if (argc != 4) {
+    if(argc ==2 && strcmp(argv[1], "branch") == 0){
+        printf("Existing branches:\n");
+        for(int i=0; i<cnt; i++){
+            printf("- %s\n", list[i].fifo_file_name);
+        }
+        return;
+    }
+
+    else if (argc != 4) {
         fprintf(stderr, "Usage: %s branch -b <branch_name>\n", argv[0]);
-        exit(1);
+        return;
     }
 
-    if (strcmp(argv[1], "branch") != 0 || strcmp(argv[2], "-b") != 0) {
+    else if (strcmp(argv[1], "branch") != 0 || strcmp(argv[2], "-b") != 0) {
         fprintf(stderr, "Invalid command. Usage: %s branch -b <branch_name>\n", argv[0]);
-        exit(1);
+        return;
     }
 
-    strcpy(branch_name, argv[3]);
-    if (strlen(branch_name) == 0) {
-        fprintf(stderr, "Branch name cannot be empty.\n");
-        exit(1);
+    else{
+        strcpy(branch_name, argv[3]);
+        if (strlen(branch_name) == 0) {
+            fprintf(stderr, "Branch name cannot be empty.\n");
+            return;
+        }
     }
 
-    // Create shared memory
+    // 공유 메모리 생성
     shmid = shmget(repo, SHM_SIZE, IPC_CREAT | 0644);
     if (shmid == -1) {
         perror("shmget");
-        exit(1);
+        return;
     }
 
     shmaddr = shmat(shmid, NULL, 0);
     if (shmaddr == (void *)-1) {
         perror("shmat");
-        exit(1);
+        return;
     }
 
     // master 브랜치가 없으면 생성
-    if (access(master_fifo_path, F_OK) == -1) {
-        printf("Master branch not found. Creating master branch…\n");
-        CreateBranch("master", shmid, shmaddr, master_fifo_path); // master 브랜치 생성
+    if(!Is_Branch_Exists("master")){
+        printf("master branch not found. Creating master branch...\n");
+        CreateBranch("master", shmid, shmaddr, master_fifo_path);
+
+        //Add master brnach to list
+        strncpy(list[cnt].fifo_file_name, "master", sizeof(list[cnt].fifo_file_name)-1);
+        list[cnt].fifo_file_name[sizeof(list[cnt].fifo_file_name)-1]='\0';
+        cnt++;
     }
 
-    // master 브랜치가 존재하면 지정된 브랜치 생성
+      // 중복 브랜치 체크
+    if (Is_Branch_Exists(branch_name)) {
+        printf("Error: Branch '%s' already exists.\n", branch_name);
+        return; // 중복 생성 방지
+    }
+
+    // 새로운 브랜치 생성
     CreateBranch(branch_name, shmid, shmaddr, master_fifo_path);
+
+    // 브랜치 정보를 리스트에 추가
+    strncpy(list[cnt].fifo_file_name, branch_name, sizeof(list[cnt].fifo_file_name) - 1);
+    list[cnt].fifo_file_name[sizeof(list[cnt].fifo_file_name) - 1] = '\0'; // null-terminate
+    cnt++;
 
     return;
 }

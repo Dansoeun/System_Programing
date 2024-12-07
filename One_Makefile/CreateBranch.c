@@ -49,4 +49,32 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
         printf("Master branch created with FIFO '%s'.\n", fifo_path);
         return;
     }
+
+    else 
+    {
+        if (mkfifo(b_name,0777)==-1)
+        {
+            perror("branch mkfifo");
+            exit(1);
+        }
+
+        pid=fork();
+
+        if (pid==0)
+        {
+            while (1) {
+                int master_fd = open(fifo_path, O_RDONLY);
+                if (master_fd != -1) {
+                    char buffer[4096] = {0};
+                    ssize_t bytes_read = read(master_fd, buffer, sizeof(buffer));
+                    if (bytes_read > 0) {
+                        printf("[Master Branch] Received: %s\n", buffer);
+                    }
+                    close(master_fd);
+                }
+                sleep(1);
+            }
+            exit(0);
+        }
+    }
 }

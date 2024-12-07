@@ -20,7 +20,7 @@ int cnt = 0;
 
 // 전역 변수 정의
 int msid = -1;
-int isend=-1;
+int isend = -1;
 
 void Split_Command(char command[][1000], char demand[], int *idx) {
     char *ptr = NULL;
@@ -39,36 +39,20 @@ void Split_Command(char command[][1000], char demand[], int *idx) {
 void Command_Exception(char *command[], int *idx) {
     if (strcmp(command[0], "git") != 0) {
         printf("usage: git [command] [option]\n");
-        isend=0;
         return;
-
     } else {
         if (strcmp(command[1], "add") == 0) {
             add(*idx, command); // add 함수 호출
-        }
-
-        else if (strcmp(command[1], "branch") == 0) {
+        } else if (strcmp(command[1], "branch") == 0) {
             branch(*idx, command);
-        }
-
-        else if (strcmp(command[1], "clone") == 0) {
+        } else if (strcmp(command[1], "clone") == 0) {
             clone(*idx, command);
-        }
-
-        else if (strcmp(command[1], "checkout") == 0) {
+        } else if (strcmp(command[1], "checkout") == 0) {
             checkout(*idx, command);
-        }
-
-        else if (strcmp(command[1],"push")==0 || strcmp(command[1],"pull")==0)
-        {
-            pushpull_main(*idx,command);
-        }
-        else 
-        {
+        } else if (strcmp(command[1], "push") == 0 || strcmp(command[1], "pull") == 0) {
+            pushpull_main(*idx, command);
+        } else {
             printf("usage: git [command] [option]\n");
-            isend=0;
-            return;
-
         }
     }
 }
@@ -98,10 +82,15 @@ int main(int ac, char *av[]) {
 
     printf("main msid: %d\n", msid);
 
-    printf("input command\n");
-    while (fgets(buf, 1000, stdin) != NULL) {
+    while (1) {
+        // 명령 입력 메시지 출력
         printf("input command\n");
-        buf[strlen(buf) - 1] = '\0';
+        
+        if (fgets(buf, 1000, stdin) == NULL) {
+            break;
+        }
+
+        buf[strlen(buf) - 1] = '\0'; // 개행 문자 제거
         idx = 0;
         Split_Command(command, buf, &idx);
 
@@ -110,10 +99,6 @@ int main(int ac, char *av[]) {
         }
 
         Command_Exception(argv, &idx);
-
-        if (isend==0)
-            break;
-        sleep(3);
     }
 
     return 0;
