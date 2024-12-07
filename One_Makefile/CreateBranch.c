@@ -9,6 +9,7 @@
 #include <sys/shm.h>  // 공유 메모리 관련 함수 사용을 위한 헤더
 #include "CreateBranch.h"
 #include "process.h"
+#include <sys/wait.h>
 
 #define SHM_SIZE 4096 // 공유 메모리 크기
 extern process list[100];
@@ -30,7 +31,7 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
 
         // master branch를 위한 읽기 프로세스 생성
         pid = fork();
-        if (pid == 0) {
+        /*if (pid == 0) {
             while (1) {
                 int master_fd = open(fifo_path, O_RDONLY);
                 if (master_fd != -1) {
@@ -44,6 +45,11 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
                 sleep(1);
             }
             exit(0);
+        }*/
+
+        if (pid!=0 && pid!=-1)
+        {
+            wait(NULL);
         }
         
         printf("Master branch created with FIFO '%s'.\n", fifo_path);
@@ -60,21 +66,11 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
 
         pid=fork();
 
-        if (pid==0)
+        if (pid!=0 && pid!=-1)
         {
-            while (1) {
-                int master_fd = open(fifo_path, O_RDONLY);
-                if (master_fd != -1) {
-                    char buffer[4096] = {0};
-                    ssize_t bytes_read = read(master_fd, buffer, sizeof(buffer));
-                    if (bytes_read > 0) {
-                        printf("[Master Branch] Received: %s\n", buffer);
-                    }
-                    close(master_fd);
-                }
-                sleep(1);
-            }
-            exit(0);
+            wait(NULL);
         }
+
+        printf("%s branch created with FIFO '.\n", b_name);
     }
 }

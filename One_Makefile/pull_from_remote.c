@@ -44,23 +44,52 @@ void pull_from_remote(int argc, char *argv[]) {
         exit(1);
     }
 
+    // FIFO를 blocking 모드로 변경
     int flags = fcntl(fifo_fd, F_GETFL);
     fcntl(fifo_fd, F_SETFL, flags & ~O_NONBLOCK);
 
     char buffer[BUFFER_SIZE];
-    char message[BUFFER_SIZE] = {0};  // Initialize message buffer
+    char message[BUFFER_SIZE] = {0};
     size_t message_pos = 0;
     ssize_t bytes_read;
 
-    // Add debug output before read loop
     printf("시작: FIFO로부터 읽기 대기 중...\n");
 
     while ((bytes_read = read(fifo_fd, buffer, sizeof(buffer) - 1)) > 0) {
         buffer[bytes_read] = '\0';
-        printf("받은 데이터 (%zd bytes): %s\n", bytes_read, buffer);
         
+        // 메시지를 처리하고 구분자를 찾음
         char *current_pos = buffer;
         char *delimiter_pos;
+
+        while ((delimiter_pos = strstr(current_pos, MESSAGE_DELIMITER)) != NULL) {
+            size_t chunk_size = delimiter_pos - current_pos;
+            
+            // 메시지 버퍼에 복사
+            if (message_pos + chunk_size < BUFFER_SIZE) {
+                memcpy(message + message_pos, current_pos, chunk_size);
+                message_pos += chunk_size;
+                message[message_pos] = '\0';
+                
+                // 완성된 메시지 출력
+                printf("[Pull] Received Message:\n%s\n", message);
+                
+                // 메시지 버퍼 초기화
+                message_pos = 0;
+                memset(message, 0, BUFFER_SIZE);
+            }
+            
+            // 다음 메시지로 이동
+            current_pos = delimiter_pos + strlen(MESSAGE_DELIMITER);
+        }
+        
+        // 남은 데이터 처리
+        size_t remaining = strlen(current_pos);
+        if (remaining > 0 && message_pos + remaining < BUFFER_SIZE) {
+            memcpy(message + message_pos, current_pos, remaining);
+            message_pos += remaining;
+            message[message_pos] = '\0';
+        }
     }
 
     if (bytes_read == -1) {
@@ -76,5 +105,4 @@ void pull_from_remote(int argc, char *argv[]) {
     }
 
     printf("\033[7mPull 작업 완료.\033[0m\n");
-
 }
