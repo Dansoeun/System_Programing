@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <utmp.h>
+#include <pthread.h>
 #include "checkout.h"
 #include "pushpullheader.h"
 #include "branch.h"
@@ -22,6 +24,36 @@ int cnt = 0;
 int msid = -1;
 int isend = -1;
 
+pthread_mutex_t mutex;
+pthread_cond_t cond;
+
+typedef struct utmp utmp;
+
+void set_pthread(char list[][100], int *list_idx)
+{
+    utmp current_record;
+    int utmpfd;
+    size_t rec_len=sizeof(utmp);
+
+    if ((utmpfd=open("/var/run/utmp",O_RDONLY))==-1)
+    {
+        perror(UTMP_FILE);
+        exit(-1);
+    }
+
+    while ((read(utmpfd,&current_record,rec_len))==rec_len)
+    {
+        if (current_record.ut_type!=USER_PROCESS)
+            continue;
+        
+        strcpy(list[*list_idx],current_record.ut_user);
+        *list_idx+=1;
+    }
+
+    close(utmpfd);
+
+}
+
 void Split_Command(char command[][1000], char demand[], int *idx) {
     char *ptr = NULL;
     ptr = strtok(demand, " ");
@@ -36,6 +68,7 @@ void Split_Command(char command[][1000], char demand[], int *idx) {
     }
 }
 
+/*
 void Command_Exception(char *command[], int *idx) {
     if (strcmp(command[0], "git") != 0) {
         printf("usage: git [command] [option]\n");
@@ -56,7 +89,48 @@ void Command_Exception(char *command[], int *idx) {
         }
     }
 }
+*/
+//char *command[], int *idx
+void* Command_Exception(void *arg) {
+    pthread_mutex_lock(&mutex);
+    char buf[1000];
+    char command[5][1000] = {'\0'};
+    char *argv[5] = {NULL};
+    int idx = 0;
+    
+    // 전달받은 문자열 복사
+    strcpy(buf, (char*)arg);
+    
+    // 명령어 분리
+    Split_Command(command, buf, &idx);
+    
+    // argv 배열 설정
+    for (int i = 0; i < idx; i++) {
+        argv[i] = command[i];
+    }
 
+    if (strcmp(argv[0], "git") != 0) {
+        printf("usage: git [command] [option]\n");
+        return NULL;
+    } else {
+        if (strcmp(argv[1], "add") == 0) {
+            add(idx, argv);
+        } else if (strcmp(argv[1], "branch") == 0) {
+            branch(idx, argv);
+        } else if (strcmp(argv[1], "clone") == 0) {
+            clone(idx, argv);
+        } else if (strcmp(argv[1], "checkout") == 0) {
+            checkout(idx, argv);
+        } else if (strcmp(argv[1], "push") == 0 || strcmp(argv[1], "pull") == 0) {
+            pushpull_main(idx, argv);
+        } else {
+            printf("usage: git [command] [option]\n");
+        }
+    }
+    pthread_mutex_unlock(&mutex);
+    
+    return NULL;
+}
 int main(int ac, char *av[]) {
     key_t repo_key;
     int shmid;
@@ -64,6 +138,9 @@ int main(int ac, char *av[]) {
     char command[5][1000] = {'\0'};
     char *argv[5] = {NULL};
     int idx = 0;
+    int list_idx=0;
+    pthread_t thread_list[100];
+    char usrlist[100][100]={'\0'};
 
     repo_key = ftok(av[0], 1);
 
@@ -81,7 +158,15 @@ int main(int ac, char *av[]) {
     }
 
     printf("main msid: %d\n", msid);
+    set_pthread(usrlist,&list_idx);
 
+    for(int i=0; i<list_idx; i++)
+    {
+        pthread_create(&thread_list[i],NULL,Command_Exception,(void *)buf);
+        pthread_join(thread_list[i],NULL);
+    }
+
+    
     while (1) {
         // 명령 입력 메시지 출력
         printf("input command\n");
@@ -98,8 +183,12 @@ int main(int ac, char *av[]) {
             argv[i] = command[i];
         }
 
-        Command_Exception(argv, &idx);
+        //Command_Exception(argv, &idx);
+        sleep(5);
     }
+
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&cond);
 
     return 0;
 }

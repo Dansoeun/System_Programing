@@ -10,7 +10,7 @@ $(TARGET): $(OBJS)
 
 #main 
 main.o: main.c add.h add.c checkout.h checkout.c pushpullheader.h pushpull_main.c branch.h branch.c clone.h clone.c global.h
-	$(CC) -c main.c
+	$(CC) -c main.c -lpthread
 
 #add 부분 
 add.o: add.c add.h global.h

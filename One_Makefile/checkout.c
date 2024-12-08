@@ -11,7 +11,12 @@
 #include <fcntl.h>
 #include "cp.h"
 #include "process.h"
+#include "global.h"
 
+#define SHM_SIZE 4096
+
+//checkout시,  branch에 있는 파일 생성 
+//
 //message received, from exisiting branch  .. 
 void sig_to_branch(char branchname[], int signum,pid_t branch_pid) 
 {
@@ -19,17 +24,25 @@ void sig_to_branch(char branchname[], int signum,pid_t branch_pid)
     kill(signum,branch_pid);
 }
 
-//av[0]: shmid, share memory identifier, 
-//av[1]: key_t(int), message queue identifier, 
-//av[2]: checkout file number (global var)
-//av[3]: branch name for checkout
-//av[4]: target, pid_t id 
+//git checkout [branch name]
 void checkout(int ac, char *av[])
 {
-    int shmid=0;
-    int msgid=0;
-    void *shmaddr;
-    shmid = shmget((key_t)atoi(av[0]), 200, IPC_CREAT | 0644);  //read and write permission
+    key_t repo_key = repo_key;
+    int shmid = shmget(repo_key, SHM_SIZE, IPC_CREAT | 0644);
+    if (shmid == -1) {
+        perror("공유 메모리 접근 실패");
+        exit(1);
+    }
+
+    void *shmaddr = shmat(shmid, NULL, 0);
+    if (shmaddr == (void *)-1) {
+        perror("공유 메모리 연결 실패");
+        exit(1);
+    }
+
+    printf("공유 메모리 연결 완료. 메모리 주소: %p\n", shmaddr);
+
+    int msgid=msid;
     char mkfifoname[512]={'\0'};
     char checkoutfile[2048]={'\0'};
     char buf[2048]={'\0'};
@@ -46,7 +59,6 @@ void checkout(int ac, char *av[])
     sig_to_branch(av[3],SIGUSR2,exisiting_branch);
 
     //message queue
-    msgid=msgget(atoi(av[1]),0666); // 0 -> existing message queue return
     len=msgrcv(msgid,&mkfifoname,512,0,0); //message received, from exisiting branch  .. 
 
     sprintf(checkoutfile,"checkoutfile_%d.c",atoi(av[2])); //checkout content file name 

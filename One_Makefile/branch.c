@@ -88,14 +88,15 @@ void branch(int argc, char *argv[]) {
     }
 
     // master 브랜치가 없으면 생성
-    if(!Is_Branch_Exists("master")){
+    if(!Is_Branch_Exists("master_fifo")){
         printf("master branch not found. Creating master branch...\n");
         CreateBranch("master", shmid, shmaddr, master_fifo_path);
 
         //Add master brnach to list
-        strncpy(list[cnt].fifo_file_name, "master", sizeof(list[cnt].fifo_file_name)-1);
+        /*strncpy(list[cnt].fifo_file_name, "master", sizeof(list[cnt].fifo_file_name)-1);
         list[cnt].fifo_file_name[sizeof(list[cnt].fifo_file_name)-1]='\0';
         cnt++;
+        */
     }
 
       // 중복 브랜치 체크
@@ -108,9 +109,10 @@ void branch(int argc, char *argv[]) {
     CreateBranch(branch_name, shmid, shmaddr, master_fifo_path);
 
     // 브랜치 정보를 리스트에 추가
-    strncpy(list[cnt].fifo_file_name, branch_name, sizeof(list[cnt].fifo_file_name) - 1);
+    /*strncpy(list[cnt].fifo_file_name, branch_name, sizeof(list[cnt].fifo_file_name) - 1);
     list[cnt].fifo_file_name[sizeof(list[cnt].fifo_file_name) - 1] = '\0'; // null-terminate
     cnt++;
+    */
 
     return;
 }

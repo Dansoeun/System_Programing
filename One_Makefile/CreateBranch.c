@@ -10,6 +10,7 @@
 #include "CreateBranch.h"
 #include "process.h"
 #include <sys/wait.h>
+#include "global.h"
 
 #define SHM_SIZE 4096 // 공유 메모리 크기
 extern process list[100];
@@ -18,6 +19,7 @@ extern int cnt;
 void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *master_fifo_path) {
     pid_t pid;
     char fifo_path[256];
+    int parent_pid=-1;
 
     if (strcmp(b_name, "master") == 0) {
         // master branch 처리
@@ -30,8 +32,9 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
         }
 
         // master branch를 위한 읽기 프로세스 생성
+        /*
         pid = fork();
-        /*if (pid == 0) {
+        if (pid == 0) {
             while (1) {
                 int master_fd = open(fifo_path, O_RDONLY);
                 if (master_fd != -1) {
@@ -46,11 +49,10 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
             }
             exit(0);
         }*/
-
-        if (pid!=0 && pid!=-1)
-        {
-            wait(NULL);
-        }
+       parent_pid=getpid();
+       list[cnt].pid=parent_pid+1;
+       strcpy(list[cnt].fifo_file_name,"master");
+       cnt+=1;
         
         printf("Master branch created with FIFO '%s'.\n", fifo_path);
         return;
@@ -64,13 +66,13 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
             exit(1);
         }
 
-        pid=fork();
+        //pid=fork();
 
-        if (pid!=0 && pid!=-1)
-        {
-            wait(NULL);
-        }
+        parent_pid=getpid();
+        list[cnt].pid=parent_pid+1;
+        strcpy(list[cnt].fifo_file_name,b_name);
+        cnt+=1;
 
-        printf("%s branch created with FIFO '.\n", b_name);
+        printf("%s branch created with FIFO\n", b_name);
     }
 }
