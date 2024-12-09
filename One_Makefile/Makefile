@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -lpthread
-OBJS = main.o add.o checkout.o cp.o pushpull_main.o push_to_remote.o pull_from_remote.o copy_file.o compare_files.o branch.o CreateBranch.o process.o clone.o absolute_path.o directory_check.o file_copy.o file_check.o
+OBJS = main.o add.o checkout.o cp.o pushpull_main.o push_to_remote.o pull_from_remote.o copy_file.o compare_files.o branch.o CreateBranch.o process.o clone.o absolute_path.o directory_check.o file_copy.o file_check.o clone_process.o
 TARGET = app.out
 
 all: $(TARGET)
@@ -65,6 +65,8 @@ file_copy.o: file_copy.h file_copy.c
 file_check.o: file_check.h file_check.c
 	$(CC) -c file_check.c
 
+clone_process.o: clone_process.h clone_process.c
+	$(CC) -c clone_process.c
 # clean rule
 clean:
 	rm $(OBJS)
