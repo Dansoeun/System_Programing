@@ -1,12 +1,12 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -lpthread
 OBJS = main.o add.o checkout.o cp.o pushpull_main.o push_to_remote.o pull_from_remote.o copy_file.o compare_files.o branch.o CreateBranch.o process.o clone.o absolute_path.o directory_check.o file_copy.o file_check.o
 TARGET = app.out
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS)
+	$(CC) -o $(TARGET) $(OBJS) $(CFLAGS)
 
 #main 
 main.o: main.c add.h add.c checkout.h checkout.c pushpullheader.h pushpull_main.c branch.h branch.c clone.h clone.c global.h
