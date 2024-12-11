@@ -44,5 +44,5 @@ void clone(int argc, char* argv[]) {
     }
 
     fprintf(stderr, "알 수 없는 파일 유형입니다: %s\n", file_path);
-    exit(EXIT_FAILURE);
+    //exit(EXIT_FAILURE);
 }
