@@ -65,7 +65,7 @@ void checkout(int argc, char *argv[]) {
     printf("브랜치 '%s'로 체크아웃 중...\n", branch_name);
 
     // 공유 메모리 접근
-    key_t repo_key = repo_key;
+    key_t repo_key = ftok(".", 1); // Example key generation
     int shmid = shmget(repo_key, SHM_SIZE, IPC_CREAT | 0644);
     if (shmid == -1) {
         perror("공유 메모리 접근 실패");
@@ -81,7 +81,7 @@ void checkout(int argc, char *argv[]) {
     printf("공유 메모리 연결 완료. 메모리 주소: %p\n", shmaddr);
 
     // FIFO 파일 열기
-    int fifo_fd = open(fifo_path, O_RDONLY | O_NONBLOCK);
+    int fifo_fd = open(fifo_path, O_RDONLY);
     if (fifo_fd == -1) {
         perror("FIFO 열기 실패");
         exit(1);
