@@ -72,7 +72,6 @@ void push_to_remote(int argc, char *argv[]) {
                 exit(1);
             }
         }
-
         size_t msg_len = strlen(msg.file_contents);
         if (msg_len > 0) {
             // FIFO 파일에 메시지 내용 쓰기
@@ -81,14 +80,12 @@ void push_to_remote(int argc, char *argv[]) {
                 close(fifo_fd);
                 exit(1);
             }
-
             // FIFO 파일에 구분자 쓰기
             if (write(fifo_fd, MESSAGE_DELIMITER, strlen(MESSAGE_DELIMITER)) == -1) {
                 perror("FIFO 구분자 쓰기 실패");
                 close(fifo_fd);
                 exit(1);
             }
-
             // 공유 메모리에 메시지 저장
             size_t total_len = msg_len + strlen(MESSAGE_DELIMITER);
             if (shm_offset + total_len <= SHM_SIZE) {
@@ -105,10 +102,8 @@ void push_to_remote(int argc, char *argv[]) {
                 printf("경고: 공유 메모리 공간 부족 (필요: %zu, 가능: %zu)\n", 
                        total_len, SHM_SIZE - shm_offset);
             }
-
             // 버퍼 즉시 비우기
             fsync(fifo_fd);
-
             printf("메시지 추가: %s (길이: %zd)\n", msg.file_contents, msg_len);
         }
     }

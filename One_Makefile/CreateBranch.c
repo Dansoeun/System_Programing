@@ -31,24 +31,6 @@ void CreateBranch(const char *b_name, int shmid, void *shmaddr, const char *mast
             exit(1);
         }
 
-        // master branch를 위한 읽기 프로세스 생성
-        /*
-        pid = fork();
-        if (pid == 0) {
-            while (1) {
-                int master_fd = open(fifo_path, O_RDONLY);
-                if (master_fd != -1) {
-                    char buffer[4096] = {0};
-                    ssize_t bytes_read = read(master_fd, buffer, sizeof(buffer));
-                    if (bytes_read > 0) {
-                        printf("[Master Branch] Received: %s\n", buffer);
-                    }
-                    close(master_fd);
-                }
-                sleep(1);
-            }
-            exit(0);
-        }*/
        parent_pid=getpid();
        list[cnt].pid=parent_pid+1;
        strcpy(list[cnt].fifo_file_name,"master");
